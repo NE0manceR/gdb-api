@@ -1,8 +1,20 @@
-RewriteEngine On
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^views/brand/add$ /views/brand [L]
+<IfModule mod_headers.c>
+    Header always set Access-Control-Allow-Origin "http://localhost:5173"
+    Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Origin, Content-Type, Accept, Authorization"
+</IfModule>
 
+RewriteEngine On
+
+# Перенаправлення /brand на /views/brand.php
+RewriteRule ^brand$ /views/brand.php [L]
+
+RewriteRule ^login$ /views/login.php [L]
+
+# Перенаправлення /registration на /views/registration.php
+RewriteRule ^registration$ /views/registration.php [L]
+
+# Обробка всіх інших URL через index.php
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php [L]

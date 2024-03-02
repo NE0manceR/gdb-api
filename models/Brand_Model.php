@@ -1,144 +1,167 @@
 <?php
 class Brand_Model
+
 {
-    private $conn;
+  private $conn;
 
-    function __construct(?Database $db = null)
-    {
-        $this->conn = $db;
+  function __construct(?Database $db = null)
+  {
+    $this->conn = $db;
+  }
+
+  function get_brands_skills()
+  {
+    try {
+      $query = "SELECT * FROM brands_skills";
+      $result = $this->conn->query($query);
+
+      $rows = [
+        'data' => [],
+        'status' => ''
+      ];
+      // Перевірка, чи є результати запиту
+      if ($result) {
+        // Отримання рядків в масив
+        $rows['data'] = $result->fetchAll(PDO::FETCH_ASSOC);
+        $rows['status'] = 'success';
+        // Виведення у форматі JSON
+        header('Content-Type: application/json');
+        echo json_encode($rows, JSON_PRETTY_PRINT);
+      } else {
+        $rows = [
+          'data' => [],
+          'status' => $this->conn->getError()
+        ];
+        // Виведення помилки
+        header('Content-Type: application/json');
+        echo json_encode($rows, JSON_PRETTY_PRINT);
+      }
+    } catch (\Throwable $th) {
+      $rows = [
+        'data' => [],
+        'status' => $th->getMessage()
+      ];
+
+      echo json_encode($rows, JSON_PRETTY_PRINT);
+    }
+  }
+
+  function get_all_data()
+  {
+
+    try {
+      $queryBrands = 'SELECT
+            "brands" AS source,
+            id,
+            brandName,
+            brandType,
+            brandImg
+        FROM brands';
+
+      $resultBrands = $this->conn->query($queryBrands);
+
+      $brands_data = [];
+
+      if ($resultBrands) {
+        $brands_data = $resultBrands->fetchAll(PDO::FETCH_ASSOC);
+      }
+
+      $querySkills = 'SELECT
+            "brands_skills" AS source,
+            id,
+            name,
+            type,
+            value AS brandImg
+        FROM brands_skills';
+
+      $resultSkills = $this->conn->query($querySkills);
+
+      $skills_data = [];
+
+      if ($resultSkills) {
+        $skills_data = $resultSkills->fetchAll(PDO::FETCH_ASSOC);
+      }
+
+      echo json_encode(['brands' => $brands_data, 'skills' => $skills_data], JSON_PRETTY_PRINT);
+    } catch (\Throwable $th) {
+      $rows = [
+        'data' => [],
+        'status' => $th->getMessage()
+      ];
+
+
+      echo json_encode($rows, JSON_PRETTY_PRINT);
+    }
+  }
+
+  function update_brand($data)
+  {
+    $res = [
+      'status' => 'success',
+      'message' => 'The data has been updated'
+    ];
+
+    try {
+      $query = "UPDATE brands SET
+            brandType = :brandType,
+            oneItem = :oneItem,
+            twoItems = :twoItems,
+            threeItems = :threeItems,
+            brandImg = :brandImg
+            WHERE
+            id = :id";
+
+      $stmt = $this->conn->prepare($query);
+      $stmt->bindParam(':brandType', $data['brandType']);
+      $stmt->bindParam(':oneItem', $data['oneItem']);
+      $stmt->bindParam(':twoItems', $data['twoItems']);
+      $stmt->bindParam(':threeItems', $data['threeItems']);
+      $stmt->bindParam(':brandImg', $data['brandImg']);
+      $stmt->bindParam(':id', $data['id']);
+
+      $stmt->execute();
+    } catch (\Throwable $th) {
+      $res['message'] = $th->getMessage();
+      $res['status'] = 'error';
     }
 
-    function get_brands_skills()
-    {
-        try {
-            $query = "SELECT * FROM brands_skills";
-            $result = $this->conn->query($query);
+    echo json_encode($res);
+  }
 
-            $rows = [
-                'data' => [],
-                'status' => ''
-            ];
-            // Перевірка, чи є результати запиту
-            if ($result) {
-                // Отримання рядків в масив
-                $rows['data'] = $result->fetchAll(PDO::FETCH_ASSOC);
-                $rows['status'] = 'success';
-                // Виведення у форматі JSON
-                header('Content-Type: application/json');
-                echo json_encode($rows, JSON_PRETTY_PRINT);
-            } else {
-                $rows = [
-                    'data' => [],
-                    'status' => $db->getError()
-                ];
-                // Виведення помилки
-                header('Content-Type: application/json');
-                echo json_encode($rows, JSON_PRETTY_PRINT);
-            }
-        } catch (\Throwable $th) {
-            $rows = [
-                'data' => [],
-                'status' => $th->getMessage()
-            ];
+  function brands_info()
+  {
+    try {
+      $query = "
+            SELECT
+            b.id,
+            b.brandName,
+            b.brandType,
+            b.brandImg,
+            JSON_OBJECT('name', bs1.name, 'value', bs1.value, 'type', bs1.type) AS oneItem,
+            JSON_OBJECT('name', bs2.name, 'value', bs2.value, 'type', bs2.type) AS twoItems,
+            JSON_OBJECT('name', bs3.name, 'value', bs3.value, 'type', bs3.type) AS threeItems
+            FROM brands b
+            LEFT JOIN brands_skills bs1 ON b.oneItem = bs1.id
+            LEFT JOIN brands_skills bs2 ON b.twoItems = bs2.id
+            LEFT JOIN brands_skills bs3 ON b.threeItems = bs3.id
+            ";
 
-            echo json_encode($rows, JSON_PRETTY_PRINT);
-        }
+      $result = $this->conn->query($query);
+
+      $brands_data = [];
+
+      if ($result) {
+        $brands_data = $result->fetchAll(PDO::FETCH_ASSOC);
+      }
+
+      echo json_encode(['brands' => $brands_data], JSON_PRETTY_PRINT);
+    } catch (\Throwable $th) {
+      $rows = [
+        'data' => [],
+        'status' => $th->getMessage()
+      ];
+
+      echo json_encode($rows, JSON_PRETTY_PRINT);
     }
-
-    function get_all_data()
-    {
-        try {
-            $query = "
-            SELECT 'brands' as source, id, brandName, brandType, brandImg
-            FROM brands
-            UNION ALL
-            SELECT 'brands_skills' as source, id, name, type, value
-            FROM brands_skills
-        ";
-
-            $result = $this->conn->query($query);
-
-            $brands_data = [];
-            $skills_data = [];
-
-            if ($result) {
-                $rows = $result->fetchAll(PDO::FETCH_ASSOC);
-
-                foreach ($rows as $row) {
-                    if ($row['source'] === 'brands') {
-                        $brands_data[] = $row;
-                    } elseif ($row['source'] === 'brands_skills') {
-                        $skills_data[] = $row;
-                    }
-                }
-            }
-
-            header('Content-Type: application/json');
-            echo json_encode(['brands' => $brands_data, 'skills' => $skills_data], JSON_PRETTY_PRINT);
-        } catch (\Throwable $th) {
-            $rows = [
-                'data' => [],
-                'status' => $th->getMessage()
-            ];
-
-            echo json_encode($rows, JSON_PRETTY_PRINT);
-        }
-    }
-
-    function update_brand($data, $file)
-    {
-        // Перевірка чи прийшов файл та чи не виникло помилок
-        if (isset($file['brandImg']['error']) && $file['brandImg']['error'] === UPLOAD_ERR_OK) {
-            // Генеруємо унікальне ім'я файлу, щоб уникнути конфліктів
-            $fileName = uniqid('image_') . '_' . $file['brandImg']['name'];
-    
-            // Повний шлях до директорії "uploads"
-            $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/uploads/';
-    
-            // Перевірка, чи існує директорія "uploads"
-            if (!file_exists($uploadDir)) {
-                // Якщо не існує, створюємо її
-                mkdir($uploadDir, 0777, true);
-            }
-    
-            // Повний шлях до файлу в директорії "uploads"
-            $filePath = $uploadDir . $fileName;
-    
-            // Переміщуємо файл до вказаної директорії
-            if (move_uploaded_file($file['brandImg']['tmp_name'], $filePath)) {
-                // Оновлюємо поле brandImg у базі даних зі збереженим шляхом
-                $sql = "UPDATE brands 
-                        SET brandType = :brandType, oneItem = :oneItem, twoItems = :twoItems, 
-                            threeItems = :threeItems, brandImg = :brandImg 
-                        WHERE brandName = :brandName";
-                $stmt = $this->conn->prepare($sql);
-    
-                $result = [
-                    'status' => 'success',
-                    'message' => 'Brand was updated'
-                ];
-                $db_img_path = BASE_URL . '/uploads/' . $fileName;
-                $stmt->bindParam(':brandType', $data['brandType']);
-                $stmt->bindParam(':oneItem', $data['oneItem']);
-                $stmt->bindParam(':twoItems', $data['twoItems']);
-                $stmt->bindParam(':threeItems', $data['threeItems']);
-                $stmt->bindParam(':brandImg', $db_img_path); // Зберігаємо повний шлях у базі даних
-                $stmt->bindParam(':brandName', $data['brandName']);
-    
-                if (!$stmt->execute()) {
-                    $result['status'] = 'error';
-                    $result['message'] = 'Try again later';
-                }
-            } else {
-                $result['status'] = 'error';
-                $result['message'] = 'Failed to move the uploaded file';
-            }
-        } else {
-            $result['status'] = 'error';
-            $result['message'] = 'No file uploaded or an error occurred';
-        }
-    
-        echo json_encode($result);
-    }
-    
+  }
 }
