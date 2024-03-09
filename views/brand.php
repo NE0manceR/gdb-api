@@ -31,16 +31,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
   if ($action === 'update_brand') {
-    $jsonData = json_decode(file_get_contents("php://input"), true);
 
-    $test = ['test' => '123213'];
-    header('Content-Type: application/json');
-    // echo json_encode($_POST);
     echo $brand_controller->update_brand($_POST);
 
-    // if (!empty($_FILES['file']['name'])) {
-    //   $brand_controller->update_brand_img($jsonData['id'], $_FILES);
-    // }
+    if (!empty($_FILES['file']['name'])) {
+      $brand_controller->update_brand_img($_POST['id'], $_FILES['file']);
+    }
   }
 }
 

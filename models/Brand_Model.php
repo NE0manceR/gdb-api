@@ -133,13 +133,14 @@ class Brand_Model
       if (!empty($file['name'])) {
         // Переміщення файлу до відповідної директорії (замініть на реальний шлях)
         $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/uploads/';
-        $uploadPath = $uploadDir . basename($file['name']);
+        $uploadPath =  $uploadDir . basename($file['name']);
         move_uploaded_file($file['tmp_name'], $uploadPath);
+        $dataBasePath = BASE_URL . '/uploads/' . basename($file['name']);
 
         // Оновлення поля brandImg за ідентифікатором
         $sql = "UPDATE brands SET brandImg = :brandImg WHERE id = :id";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bindParam(':brandImg', $uploadPath);  // Припустимо, що ви маєте шлях або інше представлення нового зображення
+        $stmt->bindParam(':brandImg', $dataBasePath);
         $stmt->bindParam(':id', $id);
         $stmt->execute();
 
