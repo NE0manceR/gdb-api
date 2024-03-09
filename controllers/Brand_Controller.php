@@ -29,6 +29,13 @@ class Brand_Controller
         echo $resutlt;
     }
 
+    public function update_brand_img($id, $file)
+    {
+        $resutlt = $this->brand_model->update_brand_img($id, $file);
+
+        echo $resutlt;
+    }
+
     public function brands_info()
     {
         $resutlt = $this->brand_model->brands_info();

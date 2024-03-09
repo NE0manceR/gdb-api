@@ -106,8 +106,7 @@ class Brand_Model
             brandType = :brandType,
             oneItem = :oneItem,
             twoItems = :twoItems,
-            threeItems = :threeItems,
-            brandImg = :brandImg
+            threeItems = :threeItems
             WHERE
             id = :id";
 
@@ -116,7 +115,6 @@ class Brand_Model
       $stmt->bindParam(':oneItem', $data['oneItem']);
       $stmt->bindParam(':twoItems', $data['twoItems']);
       $stmt->bindParam(':threeItems', $data['threeItems']);
-      $stmt->bindParam(':brandImg', $data['brandImg']);
       $stmt->bindParam(':id', $data['id']);
 
       $stmt->execute();
@@ -127,6 +125,44 @@ class Brand_Model
 
     echo json_encode($res);
   }
+
+  public function update_brand_img($id, $file)
+  {
+    try {
+      // Перевірка, чи був переданий файл
+      if (!empty($file['name'])) {
+        // Переміщення файлу до відповідної директорії (замініть на реальний шлях)
+        $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/uploads/';
+        $uploadPath = $uploadDir . basename($file['name']);
+        move_uploaded_file($file['tmp_name'], $uploadPath);
+
+        // Оновлення поля brandImg за ідентифікатором
+        $sql = "UPDATE brands SET brandImg = :brandImg WHERE id = :id";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':brandImg', $uploadPath);  // Припустимо, що ви маєте шлях або інше представлення нового зображення
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+
+        $result = [
+          'status' => 'success',
+          'message' => 'BrandImg with id ' . $id . ' was updated'
+        ];
+      } else {
+        $result = [
+          'status' => 'error',
+          'message' => 'No file uploaded'
+        ];
+      }
+    } catch (\Throwable $th) {
+      $result = [
+        'status' => 'error',
+        'message' => 'Error updating brandImg: ' . $th->getMessage()
+      ];
+    }
+
+    echo json_encode($result, JSON_PRETTY_PRINT);
+  }
+
 
   function brands_info()
   {

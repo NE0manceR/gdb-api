@@ -17,21 +17,34 @@ $db = new Database($db_config);
 $brand_model = new Brand_Model($db);
 $brand_controller = new Brand_Controller($brand_model);
 
-$json = file_get_contents("php://input");
-$data = json_decode($json, true);
 
-$action = $data['action'] ?? '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  $action = $_POST['action'] ?? '';
 
-if ($action === 'get_brands_skills') {
+  if ($action === 'get_brands_skills') {
     echo $brand_controller->brands_info();
+  }
+
+  if ($action === 'get_all_data') {
+    echo $brand_controller->get_all_data();
+  }
+
+
+  if ($action === 'update_brand') {
+    $jsonData = json_decode(file_get_contents("php://input"), true);
+
+    $test = ['test' => '123213'];
+    header('Content-Type: application/json');
+    // echo json_encode($_POST);
+    echo $brand_controller->update_brand($_POST);
+
+    // if (!empty($_FILES['file']['name'])) {
+    //   $brand_controller->update_brand_img($jsonData['id'], $_FILES);
+    // }
+  }
 }
 
-if ($action === 'get_all_data') {
-    echo $brand_controller->get_all_data();
-}
-if ($action === 'update_brand') {
-    echo $brand_controller->update_brand($data['data']);
-}
+
 
 
 
