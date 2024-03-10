@@ -123,35 +123,58 @@ class Brand_Model
       $res['status'] = 'error';
     }
 
-    echo json_encode($res);
+    // echo json_encode($res);
   }
 
   public function update_brand_img($id, $file)
   {
     try {
-      // Перевірка, чи був переданий файл
+
+      $result = [
+        'status' => 'success',
+        'message' => 'BrandImg with id ' . $id . ' was updated'
+      ];
+
       if (!empty($file['name'])) {
-        // Переміщення файлу до відповідної директорії (замініть на реальний шлях)
-        $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/uploads/';
-        $uploadPath =  $uploadDir . basename($file['name']);
-        move_uploaded_file($file['tmp_name'], $uploadPath);
-        $dataBasePath = BASE_URL . '/uploads/' . basename($file['name']);
+        // $stmt = $this->conn->prepare("SELECT brandImg FROM brands WHERE id = :id");
+        // $stmt->bindParam(':id', $id);
+        // $stmt->execute();
+        // $currentImagePath = $stmt->fetchColumn();
 
-        // Оновлення поля brandImg за ідентифікатором
-        $sql = "UPDATE brands SET brandImg = :brandImg WHERE id = :id";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bindParam(':brandImg', $dataBasePath);
-        $stmt->bindParam(':id', $id);
-        $stmt->execute();
+        // $result['massage'] = $currentImagePath;
+        // echo json_encode($result);
+        // return;
+        $file_extansion = pathinfo($file['name'], PATHINFO_EXTENSION);
 
-        $result = [
-          'status' => 'success',
-          'message' => 'BrandImg with id ' . $id . ' was updated'
-        ];
+        if ($file_extansion == 'png' || $file_extansion == 'jpg' || $file_extansion == 'webp') {
+          $img_directories = 'uploads/brands/';
+          $img_to_delete = $_SERVER['DOCUMENT_ROOT'] . '/' . $img_directories . $id;
+          $new_img_name = $id . '.' . $file_extansion;
+          $result['qwe']  = $img_to_delete . '.' . 'png';
+
+          if (file_exists($img_to_delete . '.' . 'png')) {
+            unlink($img_to_delete . '.' . 'png');
+          }
+
+          $img_path = 'uploads/brands/' .  basename($file['name']);
+          $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/' . $img_directories;
+          $uploadPath =  $uploadDir . basename($new_img_name);
+          move_uploaded_file($file['tmp_name'], $uploadPath);
+
+          // Оновлення поля brandImg за ідентифікатором
+          $sql = "UPDATE brands SET brandImg = :brandImg WHERE id = :id";
+          $stmt = $this->conn->prepare($sql);
+          $stmt->bindParam(':brandImg', $img_path);
+          $stmt->bindParam(':id', $id);
+          $stmt->execute();
+
+          $result['test info']  = $img_to_delete;
+          echo json_encode($result);
+        }
       } else {
         $result = [
           'status' => 'error',
-          'message' => 'No file uploaded'
+          'message' => 'No file uploaded',
         ];
       }
     } catch (\Throwable $th) {
@@ -161,7 +184,7 @@ class Brand_Model
       ];
     }
 
-    echo json_encode($result, JSON_PRETTY_PRINT);
+    // echo json_encode($result, JSON_PRETTY_PRINT);
   }
 
 
