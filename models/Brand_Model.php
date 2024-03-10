@@ -126,7 +126,7 @@ class Brand_Model
     // echo json_encode($res);
   }
 
-  public function update_brand_img($id, $file)
+  public function update_brand_img($id, $file, $img_format)
   {
     try {
 
@@ -136,24 +136,18 @@ class Brand_Model
       ];
 
       if (!empty($file['name'])) {
-        // $stmt = $this->conn->prepare("SELECT brandImg FROM brands WHERE id = :id");
-        // $stmt->bindParam(':id', $id);
-        // $stmt->execute();
-        // $currentImagePath = $stmt->fetchColumn();
-
-        // $result['massage'] = $currentImagePath;
-        // echo json_encode($result);
-        // return;
         $file_extansion = pathinfo($file['name'], PATHINFO_EXTENSION);
 
-        if ($file_extansion == 'png' || $file_extansion == 'jpg' || $file_extansion == 'webp') {
+        if (in_array($file_extansion, $img_format)) {
           $img_directories = 'uploads/brands/';
           $img_to_delete = $_SERVER['DOCUMENT_ROOT'] . '/' . $img_directories . $id;
           $new_img_name = $id . '.' . $file_extansion;
           $result['qwe']  = $img_to_delete . '.' . 'png';
 
-          if (file_exists($img_to_delete . '.' . 'png')) {
-            unlink($img_to_delete . '.' . 'png');
+          foreach ($img_format as $format) {
+            if (file_exists($img_to_delete . '.' . $format)) {
+              unlink($img_to_delete . '.' . $format);
+            }
           }
 
           $img_path = 'uploads/brands/' .  $id . '.' . $file_extansion;
@@ -186,7 +180,6 @@ class Brand_Model
 
     // echo json_encode($result, JSON_PRETTY_PRINT);
   }
-
 
   function brands_info()
   {

@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     echo $brand_controller->update_brand($_POST);
 
     if (!empty($_FILES['file']['name'])) {
-      $brand_controller->update_brand_img($_POST['id'], $_FILES['file']);
+      $brand_controller->update_brand_img($_POST['id'], $_FILES['file'], $img_format);
     }
   }
 }
