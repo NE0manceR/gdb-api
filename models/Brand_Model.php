@@ -101,6 +101,14 @@ class Brand_Model
       'message' => 'The data has been updated'
     ];
 
+    foreach ($data as $item) {
+      if ($item == '0' || $item ==  "" || $item == null) {
+        $res['message'] = 'Data is not valid';
+
+        break;
+      }
+    }
+
     try {
       $query = "UPDATE brands SET
             brandType = :brandType,
@@ -123,7 +131,7 @@ class Brand_Model
       $res['status'] = 'error';
     }
 
-    // echo json_encode($res);
+    echo json_encode($res);
   }
 
   public function update_brand_img($id, $file, $img_format)
