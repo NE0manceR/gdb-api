@@ -156,7 +156,7 @@ class Brand_Model
             unlink($img_to_delete . '.' . 'png');
           }
 
-          $img_path = 'uploads/brands/' .  basename($file['name']);
+          $img_path = 'uploads/brands/' .  $id . '.' . $file_extansion;
           $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/' . $img_directories;
           $uploadPath =  $uploadDir . basename($new_img_name);
           move_uploaded_file($file['tmp_name'], $uploadPath);
