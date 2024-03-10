@@ -11,9 +11,8 @@ $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : '
 
 // Отримуємо хост (назву сервера)
 $host = $_SERVER['HTTP_HOST'];
-
 // Збираємо базовий URL
 $baseURL = $protocol . '://' . $host;
-
-// Використовуйте $baseURL за потреби у вашому коді
 define('BASE_URL', $baseURL);
+
+$img_format = ['png', 'jpeg', 'wepb'];
